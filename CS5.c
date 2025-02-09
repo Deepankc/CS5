@@ -2,7 +2,24 @@
 #include<conio.h>
 #include<stdlib.h>
 #include<time.h>
+#include<string.h>
 
+struct user{
+	char username[100];
+	int timePlayed;
+	float ticTacToeHighScore;
+	float rockPaperScissorsHighScore;
+	float guessTheNumberHighScore;
+	int guessesLeft;
+	float headsOrTailsHighScore;
+	float rememberTheNumber;
+	int digit;
+};
+struct user user1;
+char username[100];
+int logKey=1;
+time_t startTime=time(NULL);
+time_t endTime;
 //okay okay i ain't that smart, i did chatgpt the clearScreen function
 void clearScreen() {
     #ifdef _WIN32
@@ -153,6 +170,27 @@ void clearScreen() {
 					
 					
 int home(){
+	int option=1;
+	while(option!=3){
+	    printf("=============================================================================\n");
+	printf("                                  CS5 Games\n");
+	printf("=============================================================================\n");
+	printf("1.Login\n");
+	printf("2.Sign Up\n");
+	printf("3.Exit\n");	
+	    printf("Choose your option:");
+    	scanf("%d",&option);
+	    switch(option){
+		    case 1:
+		    	while(logKey==1){
+		    	printf("Enter your username:");
+		    	scanf("%s",username);
+		    	logKey++;
+		    }
+		    	FILE *fptr3=fopen("users.txt","r");
+		    	while(fscanf(fptr3,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",user1.username,&user1.timePlayed,&user1.ticTacToeHighScore,&user1.rockPaperScissorsHighScore,&user1.guessTheNumberHighScore,&user1.guessesLeft,&user1.headsOrTailsHighScore,&user1.rememberTheNumber,&user1.digit)!=EOF){
+		    		if(strcmp(user1.username,username)==0){
+		    			printf("LOGIN SUCCESSFUL!!!\n");
 	printf("=============================================================================\n");
 	printf("                                  CS5 Games\n");
 	printf("=============================================================================\n");
@@ -161,7 +199,8 @@ int home(){
 	printf("3.Guess the number\n");
 	printf("4.Heads or Tails\n");
 	printf("5.Remember the number\n");
-	printf("6.Exit\n");
+	printf("6.View profile\n");
+	printf("7.Exit\n");
 	int option;
 	printf("Select an option:");
 	scanf("%i",&option);
@@ -170,8 +209,8 @@ int home(){
 			printf("=============================================================================\n");
 	    	printf("                                Tic Tac Toe\n");
 			printf("=============================================================================\n");
-					
 			option=1;
+			float ticTacToeScore=0.0;
 			while(option==1){
 				printf("1.Play\n");
 		    	printf("2.Home\n");
@@ -208,7 +247,7 @@ int home(){
 					}
 					for(i=0;i<3;i++){
 					    for(j=0;j<3;j++){
-						    printf("%c", grid[i][j] == 0 ? '-' : grid[i][j]);
+						    printf("%c", grid[i][j] == 0 ? '-' : grid[i][j]); //GPT
 				    	}
 				    	printf("\n");
 				    }
@@ -216,15 +255,31 @@ int home(){
 				}
 				if(checkWinner(grid)==0){
 					printf("YOU WON!!!\n");
+					ticTacToeScore++;
 				}
 				else if(checkWinner(grid)==1){
 					printf("COMPUTER WON!!!\n");
 				}
 				else{
-				    printf("DRAW!\n");	
+				    printf("DRAW!\n");
+					ticTacToeScore+=0.5;	
 				}
 				getch();
-              clearScreen();
+			}
+			if(ticTacToeScore>user1.ticTacToeHighScore){
+					struct user temp;
+			FILE *fptr5=fopen("users.txt","r");
+			FILE *temp2=fopen("temp.txt","w");
+			while(fscanf(fptr5,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+				   temp.ticTacToeHighScore=ticTacToeScore;
+				}
+				fprintf(temp2,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr5);
+			fclose(temp2);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
 			}
 			home();
 		break;
@@ -234,6 +289,7 @@ int home(){
 	    	printf("                               Rock Paper Scissors\n");
 			printf("=============================================================================\n");
 			option=1;
+			float rockPaperScissorsScore=0.0;
 			while(option==1){
 				printf("1.Play\n");
 		    	printf("2.Home\n");
@@ -277,15 +333,18 @@ int home(){
 				}
 				if(playerMove==computerMove){
 					printf("DRAW!");
+					rockPaperScissorsScore+=0.5;
 				}
 				else if(playerMove==1 && computerMove==2 ){
 					printf("COMPUTER WINS!!!");
 				}
 				else if(playerMove==1 && computerMove==3 ){
 					printf("YOU WIN!!!");
+					rockPaperScissorsScore++;
 				}
 				else if(playerMove==2 && computerMove==1 ){
 					printf("YOU WIN!!!");
+					rockPaperScissorsScore++;
 				}
 				else if(playerMove==2 && computerMove==3 ){
 					printf("COMPUTER WINS!!!");
@@ -295,11 +354,27 @@ int home(){
 				}
 				else if(playerMove==3 && computerMove==2 ){
 					printf("YOU WIN!!!");
+					rockPaperScissorsScore++;
 				}
 				printf("\n");
 				printf("-----------------------------------------------------------------------------\n");
 				getch();
               clearScreen();
+			}
+			if(rockPaperScissorsScore>user1.rockPaperScissorsHighScore){
+					struct user temp;
+			FILE *fptr6=fopen("users.txt","r");
+			FILE *temp3=fopen("temp.txt","w");
+			while(fscanf(fptr6,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+				   temp.rockPaperScissorsHighScore=rockPaperScissorsScore;
+				}
+				fprintf(temp3,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr6);
+			fclose(temp3);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
 			}
 			home();
 		break;	
@@ -309,6 +384,8 @@ int home(){
 	    	printf("                               Guess The Number\n");
 			printf("=============================================================================\n");
 		    option=1;
+		    int totalGuessesLeft=0;
+		    float guessTheNumberScore=0.0;
 			while(option==1){
 				printf("1.Play\n");
 		    	printf("2.Home\n");
@@ -317,8 +394,8 @@ int home(){
 		    	if(option==2){
 		    		break;
 				}
-				printf("\nThe computer will generate a random number from 1 to 100 without telling you and you have to guess the number within 10 tries. If your guess is higher than\
- the generated number ,the console will print \"Too High\" and if your guess is lower, the console will print \"Too Low\"\n");
+				printf("\nThe computer will generate a random number from 1 to 100 without telling you and you have to guess the number within 10 tries. If your guess is more than 10 units higher than\
+ the generated number ,the console will print \"Too High\" , if it is less than 10 units higher, the console will print \"High\" and correspondingly if your guess is more than 10 units lower, the console will print \"Too Low\",and if it is less than 10 units lower, the console will print \"Low\"\n");
 				getch();
 				srand(time(0));
 				int randnum=(rand()%(100-1+1))+1,guess=10,num=-1;
@@ -327,19 +404,48 @@ int home(){
 					printf("Guess:");
 					scanf("%d",&num);
 					if(randnum>num){
+						if(randnum-num > 10){
 						printf("Too Low.\n");
+					    }
+					    else{
+					    printf("Low.\n");
+						}
 					}
 					else if(randnum<num){
+						if(num-randnum > 10){
 						printf("Too High.\n");
+					    }
+					    else{
+					    printf("High.\n");
+						}
 					}
 					else{
 						printf("CORRECT!!!\n");
+						getch();
+						totalGuessesLeft+=guess;
+						guessTheNumberScore++;
 						break;
 					}
 					guess--;
 				}
              printf("-----------------------------------------------------------------------------\n");
               clearScreen();
+			}
+			if(guessTheNumberScore>user1.guessTheNumberHighScore || (guessTheNumberScore==user1.guessTheNumberHighScore && totalGuessesLeft>user1.guessesLeft)){
+					struct user temp;
+			FILE *fptr7=fopen("users.txt","r");
+			FILE *temp4=fopen("temp.txt","w");
+			while(fscanf(fptr7,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+				   temp.guessTheNumberHighScore=guessTheNumberScore;
+				   temp.guessesLeft=totalGuessesLeft;
+				}
+				fprintf(temp4,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr7);
+			fclose(temp4);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
 			}
 			home();
 		break;	
@@ -348,7 +454,8 @@ int home(){
 			printf("=============================================================================\n");
 	    	printf("                               Heads or Tails\n");
 			printf("=============================================================================\n");
-		option=1;
+		    option=1;
+		    float headsOrTailsScore=0.0;
 			while(option==1){
 				printf("1.Play\n");
 		    	printf("2.Home\n");
@@ -384,6 +491,7 @@ int home(){
 				}
 				if(randSide==side){
 					printf("You won.\n");
+					headsOrTailsScore++;
 				}
 				else{
 					printf("BRUHHHHH you lost with 1 in 2 odds.\n");
@@ -391,6 +499,21 @@ int home(){
 				printf("-----------------------------------------------------------------------------\n");
 				getch();
 				clearScreen();
+			}
+			if(headsOrTailsScore>user1.headsOrTailsHighScore){
+					struct user temp;
+			FILE *fptr8=fopen("users.txt","r");
+			FILE *temp5=fopen("temp.txt","w");
+			while(fscanf(fptr8,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+				   temp.headsOrTailsHighScore=headsOrTailsScore;
+				}
+				fprintf(temp5,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr8);
+			fclose(temp5);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
 			}
 			home();
 		break;	
@@ -400,6 +523,8 @@ int home(){
 	    	printf("                              Remember The Number\n");
 			printf("=============================================================================\n");
 			option=1;
+			float rememberTheNumberScore=0.0;
+			int totalDigits=0;
 			while(option==1){
 				printf("1.Play\n");
 		    	printf("2.Home\n");
@@ -408,20 +533,24 @@ int home(){
 		    	if(option==2){
 		    		break;
 				}
-				printf("The computer will generate a random n digit number then,it will clear the screen and you have to remember the number.\n");
+				printf("The computer will generate a random n digit number then in 5 seconds, it will clear the screen and you have to remember the number.\n");
 				int n;
 				printf("Enter the value of n:");
 				scanf("%i",&n);
 				srand(time(0));
 				int randnum=(rand()%((int)(pow(10,n)-1)-(int)(pow(10,n-1))+1))+(int)pow(10,n-1);
 				printf("Your number is %i.",randnum);
-				getch();
+				time_t beginTime=time(NULL);
+				while(time(NULL)-beginTime<=5){
+				}
 				clearScreen();
 				int num;
 				printf("Enter the number:");
 				scanf("%i",&num);
 				if(num==randnum){
 					printf("CORRECT!!!\n");
+					rememberTheNumberScore++;
+					totalDigits+=n;
 				}
 				else{
 					printf("INCORRECT!\n");
@@ -431,13 +560,120 @@ int home(){
               getch();
               clearScreen();
 			}
+			if(rememberTheNumberScore>user1.rememberTheNumber || (rememberTheNumberScore==user1.rememberTheNumber && totalDigits>user1.digit)){
+					struct user temp;
+			FILE *fptr9=fopen("users.txt","r");
+			FILE *temp6=fopen("temp.txt","w");
+			while(fscanf(fptr9,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+				   temp.rememberTheNumber=rememberTheNumberScore;
+				   temp.digit=totalDigits;
+				}
+				fprintf(temp6,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr9);
+			fclose(temp6);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
+			}
 			home();
 		break;	
 		
 		case 6:
+			printf("=============================================================================\n");
+	    	printf("                                  Statistics\n");
+			printf("=============================================================================\n");
+			option=1;
+			while(option==1){
+				printf("1.View\n");
+		    	printf("2.Home\n");
+				printf("Select an option:");
+		    	scanf("%i",&option);
+		    	if(option==2){
+		    		break;
+				}
+				printf("\nUsername:%s\n",user1.username);
+				printf("Time Played:%i\n",user1.timePlayed);
+				printf("Tic Tac Toe High Score:%.1f\n",user1.ticTacToeHighScore);
+				printf("Rock Paper Scissors High Score:%.1f\n",user1.rockPaperScissorsHighScore);
+				printf("Guess The Number High Score:%.1f\n",user1.guessTheNumberHighScore);
+				printf("   Guesses Left:%i\n",user1.guessesLeft);
+				printf("Heads or Tails High Score:%.1f\n",user1.headsOrTailsHighScore);
+				printf("Remember The Number High Score:%.1f\n",user1.rememberTheNumber);
+				printf("   Digit:%i\n",user1.digit);
+				getch();
+			}
+			home();
+		break;
+	
+		case 7:
+			endTime=time(NULL);
+			int sessionTime=(endTime-startTime)/60;
+			printf("In this session, You played for %d minutes.\n",sessionTime);
+			user1.timePlayed+=sessionTime;
+			struct user temp;
+			FILE *fptr4=fopen("users.txt","r");
+			FILE *temp1=fopen("temp.txt","w");
+			while(fscanf(fptr4,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+					temp.timePlayed+=sessionTime;
+					printf("Total time played: %i minutes\n",temp.timePlayed);
+				}
+				fprintf(temp1,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr4);
+			fclose(temp1);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
 			return 0;
 		break;
 	}
+					}
+				}
+				printf("Username does not exist.\n");
+	    	break;
+		    case 2:
+			    printf("Pick a username:");
+		    	scanf("%s",username);
+		    	FILE *fptr2=fopen("users.txt","r");
+		    	char testUsername[100];
+		    	while(fscanf(fptr2,"%s %*d %*f %*f %*f %*d %*f %*f %*d",testUsername)!=EOF){
+		    		if(strcmp(testUsername,username)==0){
+		    			printf("The username already exists.\n");
+		    			break;
+					}
+				}
+				if(strcmp(testUsername,username)!=0){
+					FILE *fptr1=fopen("users.txt","a");
+			        fprintf(fptr1,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",username,0,0.0,0.0,0.0,0,0.0,0.0,0);
+			        fclose(fptr1);
+					}
+				
+		        fclose(fptr2);
+		    break;
+		    case 3:
+		    	endTime=time(NULL);
+			int sessionTime=(endTime-startTime)/60;
+			printf("In this session, You played for %d minutes.\n",sessionTime);
+			user1.timePlayed+=sessionTime;
+			struct user temp;
+			FILE *fptr4=fopen("users.txt","r");
+			FILE *temp1=fopen("temp.txt","w");
+			while(fscanf(fptr4,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d",temp.username,&temp.timePlayed,&temp.ticTacToeHighScore,&temp.rockPaperScissorsHighScore,&temp.guessTheNumberHighScore,&temp.guessesLeft,&temp.headsOrTailsHighScore,&temp.rememberTheNumber,&temp.digit)!=EOF){
+				if(strcmp(temp.username,user1.username)==0){
+					temp.timePlayed+=sessionTime;
+					printf("Total time played: %i minutes\n",temp.timePlayed);
+				}
+				fprintf(temp1,"%s %d %.1f %.1f %.1f %d %.1f %.1f %d\n",temp.username,temp.timePlayed,temp.ticTacToeHighScore,temp.rockPaperScissorsHighScore,temp.guessTheNumberHighScore,temp.guessesLeft,temp.headsOrTailsHighScore,temp.rememberTheNumber,temp.digit);
+			};
+			fclose(fptr4);
+			fclose(temp1);
+			remove("users.txt");
+			rename("temp.txt","users.txt");
+			    return 0;
+	    	break;
+	}
+}
     return 0;
 }
 
