@@ -1,8 +1,9 @@
-#include<stdio.h>
-#include<conio.h>
-#include<time.h>
-#include<math.h>
-#include<string.h>
+#include <stdio.h>
+#include <conio.h>
+#include <time.h>
+#include <math.h>
+#include <string.h>
+#include <unistd.h>  // For sleep function
 
 struct user {
     char username[100];
@@ -28,27 +29,21 @@ void clearScreen() {
         system("clear");
     #endif
 }
-
-// File handling functions - updated to use text file
+//file handling:
 void saveUser() {
     FILE *fp = fopen("users.txt", "a");  // Append mode for text file
-    if(fp != NULL) {
-        fprintf(fp, "%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", 
-            currentUser.username,
-            currentUser.ticTacToeWins,
-            currentUser.ticTacToeLosses,
-            currentUser.rockPaperScissorsWins,
-            currentUser.rockPaperScissorsLosses,
-            currentUser.guessTheNumberWins,
-            currentUser.guessTheNumberLosses,
-            currentUser.headsOrTailsWins,
-            currentUser.headsOrTailsLosses,
-            currentUser.rememberTheNumberWins,
-            currentUser.rememberTheNumberLosses);
+    if (fp != NULL) {
+        fprintf(fp, "Username: %s\n", currentUser.username);
+        fprintf(fp, "Tic Tac Toe: Wins: %d, Losses: %d\n", currentUser.ticTacToeWins, currentUser.ticTacToeLosses);
+        fprintf(fp, "Rock Paper Scissors: Wins: %d, Losses: %d\n", currentUser.rockPaperScissorsWins, currentUser.rockPaperScissorsLosses);
+        fprintf(fp, "Guess The Number: Wins: %d, Losses: %d\n", currentUser.guessTheNumberWins, currentUser.guessTheNumberLosses);
+        fprintf(fp, "Heads or Tails: Wins: %d, Losses: %d\n", currentUser.headsOrTailsWins, currentUser.headsOrTailsLosses);
+        fprintf(fp, "Remember The Number: Wins: %d, Losses: %d\n", currentUser.rememberTheNumberWins, currentUser.rememberTheNumberLosses);
+        fprintf(fp, "----------------------------------------\n");
         fclose(fp);
     }
 }
-
+//this is used to store the records of the users.
 void updateUserStats() {
     FILE *fpRead = fopen("users.txt", "r");
     FILE *fpTemp = fopen("temp.txt", "w");
@@ -56,98 +51,81 @@ void updateUserStats() {
     char line[256];
     int found = 0;
     
-    if(fpRead != NULL && fpTemp != NULL) {
-        while(fgets(line, sizeof(line), fpRead)) {
-            // Remove newline character if present
-            line[strcspn(line, "\n")] = 0;
+    if (fpRead != NULL && fpTemp != NULL) {
+        while (fgets(line, sizeof(line), fpRead)) {
             
-            char username[100];
-            char *token = strtok(line, ",");
-            if(token != NULL) {
-                strcpy(username, token);
+            if (strstr(line, "Username:") != NULL) {
+                char username[100];
+                sscanf(line, "Username: %s", username);
                 
-                if(strcmp(username, currentUser.username) == 0) {
-                    // Found the user, update with current stats
-                    fprintf(fpTemp, "%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", 
-                        currentUser.username,
-                        currentUser.ticTacToeWins,
-                        currentUser.ticTacToeLosses,
-                        currentUser.rockPaperScissorsWins,
-                        currentUser.rockPaperScissorsLosses,
-                        currentUser.guessTheNumberWins,
-                        currentUser.guessTheNumberLosses,
-                        currentUser.headsOrTailsWins,
-                        currentUser.headsOrTailsLosses,
-                        currentUser.rememberTheNumberWins,
-                        currentUser.rememberTheNumberLosses);
+                if (strcmp(username, currentUser.username) == 0) {
+                	int i;
+                    fprintf(fpTemp, "Username: %s\n", currentUser.username);
+                    fprintf(fpTemp, "Tic Tac Toe: Wins: %d, Losses: %d\n", currentUser.ticTacToeWins, currentUser.ticTacToeLosses);
+                    fprintf(fpTemp, "Rock Paper Scissors: Wins: %d, Losses: %d\n", currentUser.rockPaperScissorsWins, currentUser.rockPaperScissorsLosses);
+                    fprintf(fpTemp, "Guess The Number: Wins: %d, Losses: %d\n", currentUser.guessTheNumberWins, currentUser.guessTheNumberLosses);
+                    fprintf(fpTemp, "Heads or Tails: Wins: %d, Losses: %d\n", currentUser.headsOrTailsWins, currentUser.headsOrTailsLosses);
+                    fprintf(fpTemp, "Remember The Number: Wins: %d, Losses: %d\n", currentUser.rememberTheNumberWins, currentUser.rememberTheNumberLosses);
+                    fprintf(fpTemp, "----------------------------------------\n");
                     found = 1;
+                    for (i = 0; i < 5; i++) {
+                        fgets(line, sizeof(line), fpRead);
+                    }
                 } else {
-                    // Copy the line as is
-                    fprintf(fpTemp, "%s\n", line);
+                    
+                    fprintf(fpTemp, "%s", line);
                 }
+            } else {
+                
+                fprintf(fpTemp, "%s", line);
             }
         }
         
         fclose(fpRead);
         fclose(fpTemp);
         
-        // Delete original file and rename temp file
+       
         remove("users.txt");
         rename("temp.txt", "users.txt");
     }
     
-    if(!found) {
+    if (!found) {
         saveUser();
     }
 }
 
 int loginUser(char *username) {
-    FILE *fp = fopen("users.txt", "r");  // Read mode for text file
+    FILE *fp = fopen("users.txt", "r");  
     int found = 0;
     char line[256];
     
-    if(fp != NULL) {
-        while(fgets(line, sizeof(line), fp)) {
-            // Remove newline character if present
-            line[strcspn(line, "\n")] = 0;
-            
-            char *token = strtok(line, ",");
-            if(token != NULL && strcmp(token, username) == 0) {
-                strcpy(currentUser.username, token);
+    if (fp != NULL) {
+        while (fgets(line, sizeof(line), fp)) {
+            if (strstr(line, "Username:") != NULL) {
+                char fileUsername[100];
+                sscanf(line, "Username: %s", fileUsername);
                 
-                // Parse remaining values
-                token = strtok(NULL, ",");
-                currentUser.ticTacToeWins = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.ticTacToeLosses = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.rockPaperScissorsWins = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.rockPaperScissorsLosses = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.guessTheNumberWins = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.guessTheNumberLosses = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.headsOrTailsWins = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.headsOrTailsLosses = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.rememberTheNumberWins = atoi(token);
-                
-                token = strtok(NULL, ",");
-                currentUser.rememberTheNumberLosses = atoi(token);
-                
-                found = 1;
-                break;
+                if (strcmp(fileUsername, username) == 0) {
+                    strcpy(currentUser.username, fileUsername);
+                    int i;
+                    for (i = 0; i < 5; i++) {
+                        fgets(line, sizeof(line), fp);
+                        if (strstr(line, "Tic Tac Toe:") != NULL) {
+                            sscanf(line, "Tic Tac Toe: Wins: %d, Losses: %d", &currentUser.ticTacToeWins, &currentUser.ticTacToeLosses);
+                        } else if (strstr(line, "Rock Paper Scissors:") != NULL) {
+                            sscanf(line, "Rock Paper Scissors: Wins: %d, Losses: %d", &currentUser.rockPaperScissorsWins, &currentUser.rockPaperScissorsLosses);
+                        } else if (strstr(line, "Guess The Number:") != NULL) {
+                            sscanf(line, "Guess The Number: Wins: %d, Losses: %d", &currentUser.guessTheNumberWins, &currentUser.guessTheNumberLosses);
+                        } else if (strstr(line, "Heads or Tails:") != NULL) {
+                            sscanf(line, "Heads or Tails: Wins: %d, Losses: %d", &currentUser.headsOrTailsWins, &currentUser.headsOrTailsLosses);
+                        } else if (strstr(line, "Remember The Number:") != NULL) {
+                            sscanf(line, "Remember The Number: Wins: %d, Losses: %d", &currentUser.rememberTheNumberWins, &currentUser.rememberTheNumberLosses);
+                        }
+                    }
+                    
+                    found = 1;
+                    break;
+                }
             }
         }
         fclose(fp);
@@ -181,13 +159,12 @@ void displayStats() {
     printf("Remember The Number: Wins: %d, Losses: %d\n", currentUser.rememberTheNumberWins, currentUser.rememberTheNumberLosses);
 }
 
-// Game Helper Functions
+
 int checkSpaces(char grid[][3]) {
-    int spaces = 0;
-    int i,j;
-    for( i = 0; i < 3; i++) {
-        for( j = 0; j < 3; j++) {
-            if(grid[i][j] == 0) {
+    int spaces = 0,i,j;
+    for ( i = 0; i < 3; i++) {
+        for ( j = 0; j < 3; j++) {
+            if (grid[i][j] == 0) {
                 spaces++;
             }
         }
@@ -195,33 +172,31 @@ int checkSpaces(char grid[][3]) {
     return spaces > 0;
 }
 
-int checkWinner(char grid[][3]) {
-	int i,j;
-    // Check rows, columns and diagonals for X (player)
-    for(i = 0; i < 3; i++) {
-        if(grid[i][0] == 'x' && grid[i][1] == 'x' && grid[i][2] == 'x') return 0;
-        if(grid[0][i] == 'x' && grid[1][i] == 'x' && grid[2][i] == 'x') return 0;
+int checkWinner(char grid[][3]) {           //yeah we know this looks complex and we dont deny that we took (SOME) help from gpt.
+	int i;
+    for (i = 0; i < 3; i++) {
+        if (grid[i][0] == 'x' && grid[i][1] == 'x' && grid[i][2] == 'x') return 0;
+        if (grid[0][i] == 'x' && grid[1][i] == 'x' && grid[2][i] == 'x') return 0;
     }
-    if(grid[0][0] == 'x' && grid[1][1] == 'x' && grid[2][2] == 'x') return 0;
-    if(grid[0][2] == 'x' && grid[1][1] == 'x' && grid[2][0] == 'x') return 0;
+    if (grid[0][0] == 'x' && grid[1][1] == 'x' && grid[2][2] == 'x') return 0;
+    if (grid[0][2] == 'x' && grid[1][1] == 'x' && grid[2][0] == 'x') return 0;
 
-    // Check rows, columns and diagonals for O (computer)
-    for( i = 0; i < 3; i++) {
-        if(grid[i][0] == 'o' && grid[i][1] == 'o' && grid[i][2] == 'o') return 1;
-        if(grid[0][i] == 'o' && grid[1][i] == 'o' && grid[2][i] == 'o') return 1;
+    for ( i = 0; i < 3; i++) {
+        if (grid[i][0] == 'o' && grid[i][1] == 'o' && grid[i][2] == 'o') return 1;
+        if (grid[0][i] == 'o' && grid[1][i] == 'o' && grid[2][i] == 'o') return 1;
     }
-    if(grid[0][0] == 'o' && grid[1][1] == 'o' && grid[2][2] == 'o') return 1;
-    if(grid[0][2] == 'o' && grid[1][1] == 'o' && grid[2][0] == 'o') return 1;
+    if (grid[0][0] == 'o' && grid[1][1] == 'o' && grid[2][2] == 'o') return 1;
+    if (grid[0][2] == 'o' && grid[1][1] == 'o' && grid[2][0] == 'o') return 1;
 
-    return -1; // No winner yet
+    return -1; 
 }
 
 int validateMove(char grid[][3], int row, int column) {
-    if(row < 0 || row > 2 || column < 0 || column > 2) return 0;
+    if (row < 0 || row > 2 || column < 0 || column > 2) return 0;
     return grid[row][column] == 0;
 }
 
-// Game Implementations
+
 void playTicTacToe() {
     printf("=============================================================================\n");
     printf("                                Tic Tac Toe\n");
@@ -231,44 +206,37 @@ void playTicTacToe() {
     printf("You are 'x', computer is 'o'\n");
     printf("Enter row and column numbers (0-2) to make your move\n\n");
 
-    while(checkSpaces(grid)) {
+    while (checkSpaces(grid)) {
     	int i,j;
-        // Display grid
-        for(i = 0; i < 3; i++) {
-            for(j = 0; j < 3; j++) {
+     
+        for (i = 0; i < 3; i++) {
+            for (j = 0; j < 3; j++) {
                 printf("%c ", grid[i][j] == 0 ? '-' : grid[i][j]);
             }
             printf("\n");
         }
-
-        // Player move
         int row, column;
         do {
             printf("\nYour move (row column): ");
             scanf("%d %d", &row, &column);
-        } while(!validateMove(grid, row, column));
+        } while (!validateMove(grid, row, column));
 
         grid[row][column] = 'x';
-
-        // Check for player win
-        if(checkWinner(grid) == 0) {
+        if (checkWinner(grid) == 0) {
             currentUser.ticTacToeWins++;
             printf("\nYOU WIN!\n");
             updateUserStats();
             return;
         }
-
-        // Computer move
-        if(checkSpaces(grid)) {
+        if (checkSpaces(grid)) {
             do {
-                row = rand() % 3;
+                row = rand() % 3;                             //yeah yeah we use the rand() function from internet. 
                 column = rand() % 3;
-            } while(!validateMove(grid, row, column));
+            } while (!validateMove(grid, row, column));
 
             grid[row][column] = 'o';
 
-            // Check for computer win
-            if(checkWinner(grid) == 1) {
+            if (checkWinner(grid) == 1) {
                 currentUser.ticTacToeLosses++;
                 printf("\nCOMPUTER WINS!\n");
                 updateUserStats();
@@ -290,20 +258,16 @@ void playRockPaperScissors() {
     int playerMove;
     printf("Enter your move (1-3): ");
     scanf("%d", &playerMove);
-
     int computerMove = (rand() % 3) + 1;
-
-    // Display moves
     const char* moves[] = {"Rock", "Paper", "Scissors"};
     printf("\nYou chose: %s\n", moves[playerMove-1]);
     printf("Computer chose: %s\n", moves[computerMove-1]);
 
-    // Determine winner
-    if(playerMove == computerMove) {
+    if (playerMove == computerMove) {
         printf("\nIt's a draw!\n");
-    } else if((playerMove == 1 && computerMove == 3) || 
-              (playerMove == 2 && computerMove == 1) || 
-              (playerMove == 3 && computerMove == 2)) {
+    } else if ((playerMove == 1 && computerMove == 3) || 
+               (playerMove == 2 && computerMove == 1) || 
+               (playerMove == 3 && computerMove == 2)) {
         currentUser.rockPaperScissorsWins++;
         printf("\nYou win!\n");
     } else {
@@ -314,32 +278,44 @@ void playRockPaperScissors() {
     updateUserStats();
 }
 
-void playGuessTheNumber() {
+void playGuessTheNumber() {                                                                //this was the easiest to make among other games but difficult to win.
     printf("=============================================================================\n");
     printf("                            Guess The Number\n");
     printf("=============================================================================\n");
 
-    int number = rand() % 100 + 1;
+    int number = rand() % 100 + 1; 
     int guess, attempts = 0;
     const int MAX_ATTEMPTS = 10;
 
     printf("I'm thinking of a number between 1 and 100.\n");
     printf("You have %d attempts to guess it.\n\n", MAX_ATTEMPTS);
 
-    while(attempts < MAX_ATTEMPTS) {
+    while (attempts < MAX_ATTEMPTS) {
         printf("Attempt %d/%d. Enter your guess: ", attempts + 1, MAX_ATTEMPTS);
         scanf("%d", &guess);
         attempts++;
 
-        if(guess == number) {
+        if (guess == number) {
             currentUser.guessTheNumberWins++;
             printf("\nCongratulations! You guessed the number in %d attempts!\n", attempts);
             updateUserStats();
             return;
-        } else if(guess < number) {
-            printf("Too low!\n");
         } else {
-            printf("Too high!\n");
+            int difference = abs(guess - number); 
+
+            if (difference >= 10) {
+                if (guess < number) {
+                    printf("Too low!\n");
+                } else {
+                    printf("Too high!\n");
+                }
+            } else {
+                if (guess < number) {
+                    printf("Low.\n");
+                } else {
+                    printf("High.\n");
+                }
+            }
         }
     }
 
@@ -348,7 +324,7 @@ void playGuessTheNumber() {
     updateUserStats();
 }
 
-void playHeadsOrTails() {
+void playHeadsOrTails() { //if you cant even win this game then your'e not a gamer your'e noob than a bot.
     printf("=============================================================================\n");
     printf("                            Heads or Tails\n");
     printf("=============================================================================\n");
@@ -363,7 +339,7 @@ void playHeadsOrTails() {
     printf("\nYou chose: %s\n", choice == 1 ? "Heads" : "Tails");
     printf("Coin shows: %s\n", result == 1 ? "Heads" : "Tails");
 
-    if(choice == result) {
+    if (choice == result) {
         currentUser.headsOrTailsWins++;
         printf("\nYou win!\n");
     } else {
@@ -382,16 +358,12 @@ void playRememberTheNumber() {
     printf("Enter number of digits (1-9): ");
     int digits;
     scanf("%d", &digits);
-
-    // Generate random number
     int min = pow(10, digits-1);
     int max = pow(10, digits) - 1;
-    int number = rand() % (max - min + 1) + min;
+    int number = rand() % (max - min + 1) + min;             //this rand() function is very usefull not gonna lie.
 
     printf("\nRemember this number: %d\n", number);
     printf("You have 5 seconds...\n");
-
-    // Wait 5 seconds
     sleep(5);
     clearScreen();
 
@@ -399,7 +371,7 @@ void playRememberTheNumber() {
     printf("What was the number? ");
     scanf("%d", &guess);
 
-    if(guess == number) {
+    if (guess == number) {
         currentUser.rememberTheNumberWins++;
         printf("\nCorrect! Well done!\n");
     } else {
@@ -411,14 +383,14 @@ void playRememberTheNumber() {
 }
 
 int home() {
-    srand(time(NULL));  // Initialize random seed
+    srand(time(NULL));
 
-    while(1) {
+    while (1) {
         printf("=============================================================================\n");
         printf("                                  CS5 Games\n");
         printf("=============================================================================\n");
         
-        if(!loggedIn) {
+        if (!loggedIn) {
             printf("1. Sign Up\n");
             printf("2. Login\n");
             printf("3. Exit\n");
@@ -428,7 +400,7 @@ int home() {
             scanf("%d", &option);
             
             char username[100];
-            switch(option) {
+            switch (option) {
                 case 1:
                     printf("Enter a username: ");
                     scanf("%s", username);
@@ -440,7 +412,7 @@ int home() {
                 case 2:
                     printf("Enter your username: ");
                     scanf("%s", username);
-                    if(loginUser(username)) {
+                    if (loginUser(username)) {
                         loggedIn = 1;
                         printf("Login successful!\n");
                     } else {
@@ -467,7 +439,7 @@ int home() {
         printf("\nSelect an option: ");
         scanf("%d", &option);
         
-        switch(option) {
+        switch (option) {
             case 1:
                 playTicTacToe();
                 break;
@@ -503,4 +475,4 @@ int home() {
 int main() {
     home();
     return 0;
-}
+}                   //finally all the hardwork ends in this line. Thank you for enjoying the games.
